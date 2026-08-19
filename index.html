@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultorio - Dashboard Principal</title>
+    <!-- Librería de Iconos Profesionales (Font Awesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* =========================================
+           PALETA DE COLORES Y DISEÑO BASE
+           ========================================= */
+        :root {
+            --primary-color: #1a365d;   
+            --secondary-color: #2b6cb0; 
+            --accent-color: #38b2ac;    
+            --bg-color: #f0f4f8;        
+            --text-color: #2d3748;
+            --sidebar-width: 260px;
+        }
+
+        body { margin: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: var(--bg-color); color: var(--text-color); display: flex; height: 100vh; }
+
+        /* MENÚ LATERAL */
+        .sidebar { width: var(--sidebar-width); background-color: var(--primary-color); color: white; display: flex; flex-direction: column; box-shadow: 4px 0 10px rgba(0,0,0,0.1); }
+        .sidebar h2 { text-align: center; padding: 25px 0; margin: 0; font-size: 20px; background-color: rgba(0,0,0,0.2); letter-spacing: 1px; }
+        .sidebar h2 i { color: var(--accent-color); margin-right: 10px; }
+        .nav-links { list-style: none; padding: 0; margin: 0; margin-top: 15px;}
+        .nav-links li { padding: 15px 25px; cursor: pointer; transition: all 0.3s; margin: 5px 15px; border-radius: 8px; }
+        .nav-links li:hover, .nav-links li.active { background-color: var(--secondary-color); box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .nav-links a { color: white; text-decoration: none; display: flex; align-items: center; font-size: 15px; }
+        .nav-links i { width: 25px; font-size: 18px; margin-right: 10px; color: #e2e8f0; }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { margin: 0; font-size: 28px; color: var(--primary-color); }
+        
+        .user-profile { background: white; padding: 10px 20px; border-radius: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); font-weight: bold; display: flex; align-items: center; gap: 10px; color: var(--primary-color); }
+        .user-profile i { color: var(--accent-color); font-size: 20px; }
+
+        /* =========================================
+           TARJETAS DE RESUMEN (CARDS)
+           ========================================= */
+        .cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); display: flex; align-items: center; gap: 20px; border-bottom: 4px solid var(--secondary-color); transition: transform 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .card-icon { font-size: 40px; color: var(--secondary-color); background-color: var(--bg-color); width: 70px; height: 70px; display: flex; justify-content: center; align-items: center; border-radius: 50%; }
+        .card-info h3 { margin: 0 0 5px 0; color: #718096; font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .card-info p { margin: 0; font-size: 28px; font-weight: bold; color: var(--primary-color); }
+
+        /* =========================================
+           TABLA DE CITAS DEL DÍA
+           ========================================= */
+        .recent-appointments { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .recent-appointments h2 { margin-top: 0; color: var(--primary-color); font-size: 18px; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { text-align: left; padding: 15px; border-bottom: 1px solid #edf2f7; }
+        th { background-color: #f8fafc; color: var(--primary-color); font-weight: 600; }
+
+        /* ESTILOS DE ESTADOS AVANZADOS */
+        .estado { padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; text-transform: uppercase; display: inline-block; text-align: center; min-width: 90px;}
+        .estado.pendiente { background-color: #e2e8f0; color: #4a5568; } 
+        .estado.confirmada { background-color: #bee3f8; color: #2b6cb0; } 
+        .estado.espera { background-color: #fefcbf; color: #b7791f; } 
+        .estado.atencion { background-color: #e9d8fd; color: #6b46c1; } 
+        .estado.realizada { background-color: #c6f6d5; color: #22543d; } 
+        .estado.ausente { background-color: #fed7d7; color: #c53030; } 
+        .estado.reagendada { background-color: #feebc8; color: #c05621; } 
+
+        /* BOTONES DE ACCIÓN */
+        .btn-accion { border: none; background: none; cursor: pointer; font-size: 18px; margin-right: 10px; color: #718096; transition: color 0.3s;}
+        .btn-accion.manage:hover { color: #d69e2e; } 
+
+        /* =========================================
+           MODAL DE GESTIÓN (IDÉNTICO A CITAS)
+           ========================================= */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: white; padding: 30px; border-radius: 12px; width: 450px; box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+        .modal h2 { margin-top: 0; color: var(--primary-color); border-bottom: 2px solid var(--bg-color); padding-bottom: 10px;}
+        
+        .form-row { display: flex; gap: 15px; }
+        .form-group { margin-bottom: 15px; flex: 1; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 14px; color: var(--text-color); }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; font-family: inherit; }
+        .form-group textarea { resize: vertical; min-height: 60px; }
+        
+        .modal-botones { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; border-top: 1px solid #edf2f7; padding-top: 15px;}
+        .btn-cancelar { background-color: #e2e8f0; color: #4a5568; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-guardar { background-color: var(--secondary-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+
+        .info-resumen { background-color: #f8fafc; padding: 15px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #e2e8f0; font-size: 14px;}
+        .info-resumen strong { color: var(--primary-color); }
+        #divReagendar { display: none; background-color: #fffaf0; padding: 15px; border-radius: 8px; border-left: 4px solid #ed8936; margin-top: 15px; }
+    </style>
+</head>
+<body>
+
+    <!-- MENÚ LATERAL -->
+    <aside class="sidebar">
+        <h2><i class="fa-solid fa-notes-medical"></i> Consultorio</h2>
+        <ul class="nav-links">
+            <li class="active"><a href="index.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="pacientes.html"><i class="fa-solid fa-users"></i> Pacientes</a></li>
+            <li><a href="citas.html"><i class="fa-solid fa-calendar-check"></i> Citas</a></li>
+            <li><a href="medicos.html"><i class="fa-solid fa-user-doctor"></i> Médicos</a></li>
+            <li><a href="configuracion.html"><i class="fa-solid fa-gear"></i> Configuración</a></li>
+        </ul>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="main-content">
+        <header class="header">
+            <h1>Panel de Resumen</h1>
+            <div class="user-profile">
+                <i class="fa-solid fa-circle-user"></i> Recepción
+            </div>
+        </header>
+
+        <!-- TARJETAS DE RESUMEN -->
+        <section class="cards">
+            <div class="card" style="border-bottom-color: var(--secondary-color);">
+                <div class="card-icon" style="color: var(--secondary-color);"><i class="fa-solid fa-calendar-day"></i></div>
+                <div class="card-info">
+                    <h3>Citas Hoy</h3>
+                    <p id="contador-citas">0</p>
+                </div>
+            </div>
+            
+            <div class="card" style="border-bottom-color: var(--accent-color);">
+                <div class="card-icon" style="color: var(--accent-color);"><i class="fa-solid fa-hospital-user"></i></div>
+                <div class="card-info">
+                    <h3>Pacientes Activos</h3>
+                    <p>50</p> <!-- Este número será dinámico cuando conectemos BD -->
+                </div>
+            </div>
+            
+            <div class="card" style="border-bottom-color: #dd6b20;">
+                <div class="card-icon" style="color: #dd6b20;"><i class="fa-solid fa-clock"></i></div>
+                <div class="card-info">
+                    <h3>En Espera / Pendientes</h3>
+                    <p id="contador-pendientes">0</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- TABLA DE CITAS DEL DÍA -->
+        <section class="recent-appointments">
+            <h2><i class="fa-solid fa-list-check"></i> Agenda de Hoy</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Hora</th>
+                        <th>Paciente</th>
+                        <th>Médico</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-hoy">
+                    <!-- JavaScript inyectará las filas aquí -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- ==============================================================
+         MODAL: GESTIONAR ESTADO Y RECEPCIÓN
+         ============================================================== -->
+    <div class="modal-overlay" id="modalGestionar">
+        <div class="modal">
+            <h2><i class="fa-solid fa-clipboard-user"></i> Gestión de Recepción</h2>
+            
+            <div class="info-resumen">
+                <strong>Paciente:</strong> <span id="gestionPaciente"></span> <br>
+                <strong>Médico:</strong> <span id="gestionMedico"></span> <br>
+                <strong>Horario Actual:</strong> <span id="gestionHorario"></span>
+            </div>
+
+            <form id="formGestion">
+                <input type="hidden" id="gestionIndex">
+                
+                <div class="form-group">
+                    <label>Actualizar Estado</label>
+                    <select id="gestionEstadoSelect" onchange="verificarReagendo()" required>
+                        <option value="Pendiente">Pendiente (Por confirmar)</option>
+                        <option value="Confirmada">Confirmada (Viene en camino)</option>
+                        <option value="En Espera">En Espera (Ya llegó al consultorio)</option>
+                        <option value="En Atención">En Atención (Está con el médico)</option>
+                        <option value="Realizada">Realizada (Finalizada exitosamente)</option>
+                        <option value="No se presentó">No se presentó (Ausente)</option>
+                        <option value="Cancelada">Cancelada</option>
+                        <option value="Reagendada" style="font-weight: bold; color: #dd6b20;">Reagendada / Reasignar</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Anotaciones (Opcional)</label>
+                    <textarea id="gestionNota" placeholder="Ej: Llamó para avisar que llega 10 min tarde..."></textarea>
+                </div>
+
+                <div id="divReagendar">
+                    <h4 style="margin-top:0; color: #c05621;"><i class="fa-solid fa-calendar-rotate"></i> Nuevos Datos</h4>
+                    <div class="form-row">
+                        <div class="form-group"><label>Nueva Fecha</label><input type="date" id="reFecha"></div>
+                        <div class="form-group"><label>Nueva Hora</label><input type="time" id="reHora"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Reasignar a Médico</label>
+                        <select id="reMedico">
+                            <option value="Dr. Roberto Gómez">Dr. Roberto Gómez</option>
+                            <option value="Dra. Ana Silva">Dra. Ana Silva</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="modal-botones">
+                    <button type="button" class="btn-cancelar" onclick="cerrarModalGestionar()">Cancelar</button>
+                    <button type="submit" class="btn-guardar">Actualizar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // Simulamos que estas son las citas que tocan "HOY"
+        let citasHoy = [
+            { fecha: '18-08-2026', hora: '09:00', paciente: 'Carlos Tevez', medico: 'Dr. Roberto Gómez', motivo: 'Chequeo General', estado: 'Pendiente' },
+            { fecha: '18-08-2026', hora: '10:30', paciente: 'María Becerra', medico: 'Dra. Ana Silva', motivo: 'Seguimiento', estado: 'En Espera' },
+            { fecha: '18-08-2026', hora: '14:00', paciente: 'Lionel Messi', medico: 'Dr. Roberto Gómez', motivo: 'Dolor muscular', estado: 'Confirmada' }
+        ];
+
+        function renderizarDashboard() {
+            const tbody = document.getElementById('tabla-hoy');
+            tbody.innerHTML = '';
+            
+            let pendientesOEnEspera = 0;
+
+            citasHoy.forEach((cita, index) => {
+                // Sumamos a las tarjetas si están por ser atendidos
+                if(cita.estado === 'Pendiente' || cita.estado === 'En Espera') {
+                    pendientesOEnEspera++;
+                }
+
+                // Asignar clase CSS según estado
+                let claseEstado = '';
+                if(cita.estado === 'Pendiente') claseEstado = 'estado pendiente';
+                if(cita.estado === 'Confirmada') claseEstado = 'estado confirmada';
+                if(cita.estado === 'En Espera') claseEstado = 'estado espera';
+                if(cita.estado === 'En Atención') claseEstado = 'estado atencion';
+                if(cita.estado === 'Realizada') claseEstado = 'estado realizada';
+                if(cita.estado === 'No se presentó' || cita.estado === 'Cancelada') claseEstado = 'estado ausente';
+                if(cita.estado === 'Reagendada') claseEstado = 'estado reagendada';
+
+                // Crear fila
+                let fila = `
+                    <tr>
+                        <td><strong><i class="fa-regular fa-clock" style="color:#718096"></i> ${cita.hora}</strong></td>
+                        <td><strong>${cita.paciente}</strong></td>
+                        <td>${cita.medico}</td>
+                        <td>${cita.motivo}</td>
+                        <td><span class="${claseEstado}">${cita.estado}</span></td>
+                        <td>
+                            <button class="btn-accion manage" title="Gestionar Recepción" onclick="abrirModalGestionar(${index})">
+                                <i class="fa-solid fa-clipboard-check"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+                tbody.innerHTML += fila;
+            });
+
+            // Actualizar los números en las tarjetas de arriba
+            document.getElementById('contador-citas').innerText = citasHoy.length;
+            document.getElementById('contador-pendientes').innerText = pendientesOEnEspera;
+        }
+
+        // ==========================================
+        // LÓGICAS DEL MODAL
+        // ==========================================
+        function abrirModalGestionar(index) {
+            let cita = citasHoy[index];
+            document.getElementById('gestionIndex').value = index;
+            document.getElementById('gestionPaciente').innerText = cita.paciente;
+            document.getElementById('gestionMedico').innerText = cita.medico;
+            document.getElementById('gestionHorario').innerText = `Hoy a las ${cita.hora} hs`;
+
+            document.getElementById('gestionEstadoSelect').value = cita.estado;
+            document.getElementById('gestionNota').value = ''; 
+            
+            verificarReagendo();
+            document.getElementById('modalGestionar').style.display = 'flex';
+        }
+
+        function cerrarModalGestionar() {
+            document.getElementById('modalGestionar').style.display = 'none';
+        }
+
+        function verificarReagendo() {
+            let estado = document.getElementById('gestionEstadoSelect').value;
+            let divReagendar = document.getElementById('divReagendar');
+            
+            if (estado === 'Reagendada') {
+                divReagendar.style.display = 'block';
+                document.getElementById('reFecha').required = true;
+                document.getElementById('reHora').required = true;
+            } else {
+                divReagendar.style.display = 'none';
+                document.getElementById('reFecha').required = false;
+                document.getElementById('reHora').required = false;
+            }
+        }
+
+        document.getElementById('formGestion').addEventListener('submit', function(e) {
+            e.preventDefault();
+            let index = document.getElementById('gestionIndex').value;
+            let nuevoEstado = document.getElementById('gestionEstadoSelect').value;
+            let nota = document.getElementById('gestionNota').value;
+
+            if (nuevoEstado === 'Reagendada') {
+                // Si la reagendan, podríamos borrarla de "Hoy" y pasarla al sistema general
+                alert("La cita fue reagendada para otro día. Desaparecerá de la agenda de 'Hoy'.");
+                citasHoy.splice(index, 1); 
+            } else {
+                citasHoy[index].estado = nuevoEstado;
+            }
+
+            renderizarDashboard();
+            cerrarModalGestionar();
+        });
+
+        // Iniciar
+        renderizarDashboard();
+    </script>
+</body>
+</html>

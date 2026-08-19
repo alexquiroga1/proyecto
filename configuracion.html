@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultorio - Configuración</title>
+    <!-- Librería de Iconos Profesionales (Font Awesome) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* =========================================
+           NUEVA PALETA DE COLORES MÁS MODERNA
+           ========================================= */
+        :root {
+            --primary-color: #1a365d;   /* Azul oscuro profundo */
+            --secondary-color: #2b6cb0; /* Azul vibrante */
+            --accent-color: #38b2ac;    /* Verde agua para detalles */
+            --bg-color: #f0f4f8;        /* Fondo gris-azulado muy suave */
+            --text-color: #2d3748;
+            --sidebar-width: 260px;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            height: 100vh;
+        }
+
+        /* MENÚ LATERAL REDISEÑADO */
+        .sidebar { 
+            width: var(--sidebar-width); 
+            background-color: var(--primary-color); 
+            color: white; 
+            display: flex; 
+            flex-direction: column; 
+            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar h2 { 
+            text-align: center; 
+            padding: 25px 0; 
+            margin: 0; 
+            font-size: 20px; 
+            background-color: rgba(0,0,0,0.2);
+            letter-spacing: 1px;
+        }
+        
+        .sidebar h2 i {
+            color: var(--accent-color);
+            margin-right: 10px;
+        }
+
+        .nav-links { list-style: none; padding: 0; margin: 0; margin-top: 15px;}
+        .nav-links li { 
+            padding: 15px 25px; 
+            cursor: pointer; 
+            transition: all 0.3s; 
+            margin: 5px 15px;
+            border-radius: 8px;
+        }
+        
+        .nav-links li:hover, .nav-links li.active { 
+            background-color: var(--secondary-color); 
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .nav-links a { 
+            color: white; 
+            text-decoration: none; 
+            display: flex; 
+            align-items: center;
+            font-size: 15px; 
+        }
+        
+        .nav-links i {
+            width: 25px; /* Para que todos los iconos ocupen el mismo ancho */
+            font-size: 18px;
+            margin-right: 10px;
+            color: #e2e8f0;
+        }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .header h1 { margin: 0; font-size: 28px; color: var(--primary-color); }
+
+        /* GRID PARA LOS PANELES DE CONFIGURACIÓN */
+        .config-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .config-card {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            border-top: 5px solid var(--secondary-color);
+        }
+
+        .config-card h3 {
+            margin-top: 0;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid var(--bg-color);
+            padding-bottom: 10px;
+        }
+
+        .config-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 20px 0;
+        }
+
+        .config-list li {
+            padding: 12px;
+            border-bottom: 1px solid #edf2f7;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .badge-rol {
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .badge-rol.admin {
+            background-color: #fefcbf;
+            color: #b7791f;
+        }
+
+        .btn-add {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            font-weight: bold;
+            transition: background 0.3s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-add:hover { background-color: #319795; }
+        .btn-delete { color: #e53e3e; background: none; border: none; cursor: pointer; }
+
+    </style>
+</head>
+<body>
+
+    <!-- MENÚ LATERAL -->
+    <aside class="sidebar">
+        <h2><i class="fa-solid fa-notes-medical"></i> Consultorio</h2>
+        <ul class="nav-links">
+            <li><a href="index.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="pacientes.html"><i class="fa-solid fa-users"></i> Pacientes</a></li>
+            <li><a href="citas.html"><i class="fa-solid fa-calendar-check"></i> Citas</a></li>
+            <li><a href="medicos.html"><i class="fa-solid fa-user-doctor"></i> Médicos</a></li>
+            <li class="active"><a href="configuracion.html"><i class="fa-solid fa-gear"></i> Configuración</a></li>
+        </ul>
+    </aside>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="main-content">
+        <header class="header">
+            <h1>Configuración del Sistema</h1>
+        </header>
+
+        <div class="config-grid">
+            
+            <!-- PANEL DE USUARIOS -->
+            <div class="config-card" style="border-top-color: #805ad5;">
+                <h3><i class="fa-solid fa-user-shield"></i> Usuarios del Sistema</h3>
+                <ul class="config-list" id="lista-usuarios">
+                    <!-- JS inyecta aquí -->
+                </ul>
+                <button class="btn-add" onclick="agregarUsuario()">
+                    <i class="fa-solid fa-plus"></i> Nuevo Usuario
+                </button>
+            </div>
+
+            <!-- PANEL DE CATEGORÍAS -->
+            <div class="config-card" style="border-top-color: #dd6b20;">
+                <h3><i class="fa-solid fa-tags"></i> Categorías de Consulta</h3>
+                <ul class="config-list" id="lista-categorias">
+                    <!-- JS inyecta aquí -->
+                </ul>
+                <button class="btn-add" onclick="agregarCategoria()">
+                    <i class="fa-solid fa-plus"></i> Nueva Categoría
+                </button>
+            </div>
+
+            <!-- PANEL DE OBRAS SOCIALES -->
+            <div class="config-card" style="border-top-color: #319795;">
+                <h3><i class="fa-solid fa-hospital"></i> Obras Sociales</h3>
+                <ul class="config-list" id="lista-obras">
+                    <!-- JS inyecta aquí -->
+                </ul>
+                <button class="btn-add" onclick="agregarObraSocial()">
+                    <i class="fa-solid fa-plus"></i> Nueva Obra Social
+                </button>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- JAVASCRIPT -->
+    <script>
+        // DATOS TEMPORALES
+        let usuarios = [
+            { nombre: 'Juan Recepción', rol: 'Moderador' },
+            { nombre: 'Dr. Principal', rol: 'Administrador' }
+        ];
+        
+        let categorias = ['Consulta General', 'Control / Seguimiento', 'Lectura de Estudios', 'Urgencia'];
+        
+        let obrasSociales = ['Particular (Sin Obra Social)', 'OSDE', 'Swiss Medical', 'IPS Misiones'];
+
+        // RENDERIZAR USUARIOS
+        function renderUsuarios() {
+            const lista = document.getElementById('lista-usuarios');
+            lista.innerHTML = '';
+            usuarios.forEach((user, index) => {
+                let claseBadge = user.rol === 'Administrador' ? 'badge-rol admin' : 'badge-rol';
+                lista.innerHTML += `
+                    <li>
+                        <div>
+                            <strong>${user.nombre}</strong> <br>
+                            <span class="${claseBadge}">${user.rol}</span>
+                        </div>
+                        <button class="btn-delete" onclick="eliminarUsuario(${index})"><i class="fa-solid fa-trash"></i></button>
+                    </li>
+                `;
+            });
+        }
+
+        // RENDERIZAR CATEGORÍAS
+        function renderCategorias() {
+            const lista = document.getElementById('lista-categorias');
+            lista.innerHTML = '';
+            categorias.forEach((cat, index) => {
+                lista.innerHTML += `
+                    <li>
+                        <span>${cat}</span>
+                        <button class="btn-delete" onclick="eliminarCategoria(${index})"><i class="fa-solid fa-trash"></i></button>
+                    </li>
+                `;
+            });
+        }
+
+        // RENDERIZAR OBRAS SOCIALES
+        function renderObras() {
+            const lista = document.getElementById('lista-obras');
+            lista.innerHTML = '';
+            obrasSociales.forEach((obra, index) => {
+                lista.innerHTML += `
+                    <li>
+                        <span>${obra}</span>
+                        <button class="btn-delete" onclick="eliminarObra(${index})"><i class="fa-solid fa-trash"></i></button>
+                    </li>
+                `;
+            });
+        }
+
+        // FUNCIONES PARA AGREGAR (Usando Prompt para simplificar la interfaz por ahora)
+        function agregarUsuario() {
+            let nombre = prompt("Ingrese el nombre del nuevo usuario:");
+            if (!nombre) return;
+            
+            let rolNum = prompt("Seleccione el rol:\n1. Administrador\n2. Moderador");
+            let rol = rolNum === '1' ? 'Administrador' : 'Moderador';
+            
+            usuarios.push({ nombre: nombre, rol: rol });
+            renderUsuarios();
+        }
+
+        function agregarCategoria() {
+            let nueva = prompt("Ingrese el nombre de la nueva categoría:");
+            if (nueva) {
+                categorias.push(nueva);
+                renderCategorias();
+            }
+        }
+
+        function agregarObraSocial() {
+            let nueva = prompt("Ingrese el nombre de la nueva Obra Social:");
+            if (nueva) {
+                obrasSociales.push(nueva);
+                renderObras();
+            }
+        }
+
+        // FUNCIONES PARA ELIMINAR
+        function eliminarUsuario(index) {
+            if(confirm("¿Eliminar usuario?")) { usuarios.splice(index, 1); renderUsuarios(); }
+        }
+        function eliminarCategoria(index) {
+            if(confirm("¿Eliminar categoría?")) { categorias.splice(index, 1); renderCategorias(); }
+        }
+        function eliminarObra(index) {
+            if(confirm("¿Eliminar obra social?")) { obrasSociales.splice(index, 1); renderObras(); }
+        }
+
+        // INICIAR
+        renderUsuarios();
+        renderCategorias();
+        renderObras();
+    </script>
+</body>
+</html>
