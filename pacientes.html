@@ -9,10 +9,11 @@
     <!-- SweetAlert2 para Pop-ups Premium -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
+    <!-- FIREBASE SDKs (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
     <style>
-        /* =========================================
-           PALETA DE COLORES Y DISEÑO BASE
-           ========================================= */
         :root {
             --primary-color: #1a365d;   
             --secondary-color: #2b6cb0; 
@@ -43,14 +44,13 @@
         .btn-nuevo { background-color: var(--accent-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 15px; cursor: pointer; font-weight: bold; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
         .btn-nuevo:hover { background-color: #319795; transform: translateY(-2px); }
 
-        /* CONTROLES (Buscador) */
         .table-controls { display: flex; justify-content: flex-end; margin-bottom: 15px; }
         .search-bar { position: relative; display: flex; align-items: center; }
         .search-bar i { position: absolute; left: 12px; color: #a0aec0; }
         .search-bar input { padding: 10px 10px 10px 35px; border: 1px solid #cbd5e0; border-radius: 8px; width: 300px; font-size: 14px; outline: none; transition: border-color 0.3s; }
         .search-bar input:focus { border-color: var(--secondary-color); }
 
-        /* TABLA PREMIUM CON FOTOS */
+        /* TABLA */
         .table-container { background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
         th { background-color: var(--table-header); color: white; font-weight: 600; padding: 16px; text-align: left; font-size: 14px;}
@@ -63,17 +63,14 @@
         .user-info strong { font-size: 15px; color: var(--primary-color); margin-bottom: 2px;}
         .user-info small { font-size: 12px; color: #718096; }
 
-        /* BOTONES CUADRADOS DE ACCIÓN */
         .acciones-cell { display: flex; gap: 8px; }
         .btn-action-sq { width: 35px; height: 35px; border: none; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 14px; transition: all 0.2s; }
-        .btn-action-sq.view { background-color: #e6fffa; color: #319795; }
-        .btn-action-sq.view:hover { background-color: #b2f5ea; }
         .btn-action-sq.edit { background-color: #e2e8f0; color: #2b6cb0; }
         .btn-action-sq.edit:hover { background-color: #cbd5e0; }
         .btn-action-sq.delete { background-color: #fee2e2; color: #dc2626; }
         .btn-action-sq.delete:hover { background-color: #fca5a5; }
 
-        /* MODALES ESTRUCTURALES */
+        /* MODALES */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; animation: fadeIn 0.3s forwards; }
         .modal { background: white; padding: 35px; border-radius: 20px; width: 450px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto; position: relative; animation: slideUpScale 0.4s forwards; }
         .modal-lg { width: 850px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
@@ -89,7 +86,6 @@
         .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--secondary-color); outline: none; }
         .form-group textarea { resize: vertical; min-height: 60px; }
         
-        /* Input de Archivo (Foto) Estilizado */
         .file-input-wrapper { border: 2px dashed #cbd5e0; padding: 10px; text-align: center; border-radius: 8px; background-color: #f8fafc; cursor: pointer; transition: border-color 0.3s; }
         .file-input-wrapper:hover { border-color: var(--secondary-color); }
         .file-input-wrapper input[type="file"] { display: none; }
@@ -99,11 +95,6 @@
         .btn-cancelar { background-color: #edf2f7; color: #4a5568; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold;}
         .btn-guardar { background-color: var(--secondary-color); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-weight: bold;}
 
-        /* HISTORIAL Y PREVISUALIZACIÓN */
-        .info-group { margin-bottom: 15px; font-size: 15px; }
-        .info-group strong { color: var(--primary-color); display: block; margin-bottom: 4px; font-size: 13px; text-transform: uppercase; }
-        .info-box { background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; min-height: 20px; }
-        
         .historial-citas { background-color: var(--bg-color); padding: 15px; border-radius: 12px; height: 300px; overflow-y: auto; }
         .nota-historial { background: white; padding: 12px; border-left: 4px solid var(--secondary-color); margin-bottom: 10px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
         .nota-historial small { color: #718096; display: block; margin-bottom: 5px; font-weight: bold; }
@@ -114,7 +105,6 @@
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes slideUpScale { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-
     </style>
 </head>
 <body>
@@ -148,7 +138,7 @@
             </div>
         </div>
 
-        <!-- TABLA PREMIUM CON AVATARES -->
+        <!-- TABLA -->
         <section class="table-container">
             <table id="tabla-pacientes">
                 <thead>
@@ -162,24 +152,18 @@
                     </tr>
                 </thead>
                 <tbody id="tbody-pacientes">
-                    <!-- JS inyecta datos aquí -->
+                    <!-- Firebase inyectará los datos aquí en tiempo real -->
                 </tbody>
             </table>
         </section>
     </main>
 
-    <!-- =========================================
-         MODALES
-         ========================================= -->
-
-    <!-- MODAL 1: AGREGAR PACIENTE (CON SUBIDA DE FOTO) -->
+    <!-- MODAL: AGREGAR -->
     <div class="modal-overlay" id="modalAgregar">
         <div class="modal">
             <button class="btn-cerrar-x" onclick="cerrarModalAgregar()"><i class="fa-solid fa-xmark"></i></button>
             <h2><i class="fa-solid fa-user-plus" style="color: var(--accent-color);"></i> Registrar Paciente</h2>
             <form id="formAgregar">
-                
-                <!-- SECCIÓN DE FOTO -->
                 <div class="form-group">
                     <label>Foto de Perfil (Opcional)</label>
                     <label class="file-input-wrapper">
@@ -187,25 +171,17 @@
                         <span class="file-label-text" id="addTextoArchivo">Haz clic para subir imagen</span>
                         <input type="file" id="addFoto" accept="image/*" onchange="mostrarNombreArchivo('addFoto', 'addTextoArchivo')">
                     </label>
-                    <small style="color: #a0aec0; font-size: 11px;">Si no subes foto, se asignará un avatar de stock.</small>
                 </div>
-
                 <div class="form-group"><label>ID / DNI</label><input type="text" id="addId" required></div>
                 <div class="form-group"><label>Nombre Completo</label><input type="text" id="addNombre" required></div>
-                
                 <div class="form-row">
                     <div class="form-group"><label>Edad</label><input type="number" id="addEdad" required></div>
                     <div class="form-group">
                         <label>Sexo</label>
-                        <select id="addSexo">
-                            <option value="Hombre">Hombre</option>
-                            <option value="Mujer">Mujer</option>
-                        </select>
+                        <select id="addSexo"><option value="Hombre">Hombre</option><option value="Mujer">Mujer</option></select>
                     </div>
                 </div>
-
                 <div class="form-group"><label>Teléfono</label><input type="text" id="addTelefono" required></div>
-                
                 <div class="modal-botones">
                     <button type="button" class="btn-cancelar" onclick="cerrarModalAgregar()">Cancelar</button>
                     <button type="submit" class="btn-guardar">Guardar Paciente</button>
@@ -214,34 +190,27 @@
         </div>
     </div>
 
-    <!-- MODAL 2: VER (SOLO LECTURA) Y MODAL 3: EDITAR -->
-    <!-- Mismo formato grande (lg) con Historial -->
+    <!-- MODAL: EDITAR Y FICHA CLÍNICA -->
     <div class="modal-overlay" id="modalEditar">
         <div class="modal modal-lg">
             <button class="btn-cerrar-x" onclick="cerrarModalEditar()"><i class="fa-solid fa-xmark"></i></button>
             <h2 class="modal-header-full"><i class="fa-solid fa-pen-to-square" style="color: var(--secondary-color);"></i> Ficha Clínica y Edición</h2>
-            
-            <!-- Columna Izquierda: Datos -->
             <div>
                 <form id="formEditar">
-                    <input type="hidden" id="editIndex"> 
-                    
+                    <input type="hidden" id="editDocId"> 
                     <div class="form-group">
-                        <label>Actualizar Foto de Perfil</label>
+                        <label>Actualizar Foto</label>
                         <label class="file-input-wrapper">
                             <i class="fa-solid fa-image" style="font-size: 20px; color: #a0aec0;"></i>
                             <span class="file-label-text" id="editTextoArchivo">Subir nueva imagen</span>
                             <input type="file" id="editFoto" accept="image/*" onchange="mostrarNombreArchivo('editFoto', 'editTextoArchivo')">
                         </label>
                     </div>
-
                     <div class="form-row">
                         <div class="form-group"><label>ID / DNI</label><input type="text" id="editId" required></div>
                         <div class="form-group"><label>Teléfono</label><input type="text" id="editTelefono" required></div>
                     </div>
-                    
                     <div class="form-group"><label>Nombre Completo</label><input type="text" id="editNombre" required></div>
-                    
                     <div class="form-group">
                         <label>Obra Social</label>
                         <select id="editObraSocial">
@@ -257,17 +226,14 @@
                     </div>
                 </form>
             </div>
-            
-            <!-- Columna Derecha: Historial -->
             <div>
                 <h3 style="margin-top: 0; color: var(--primary-color);"><i class="fa-solid fa-clock-rotate-left"></i> Historial de Citas</h3>
                 <div class="historial-citas" id="editListaHistorial"></div>
                 <div class="nueva-nota">
-                    <input type="text" id="inputNuevaNota" placeholder="Añadir registro clínico manual...">
-                    <button class="btn-add-nota" onclick="agregarNotaHistorial()" title="Agregar al historial"><i class="fa-solid fa-paper-plane"></i></button>
+                    <input type="text" id="inputNuevaNota" placeholder="Añadir registro clínico...">
+                    <button class="btn-add-nota" onclick="agregarNotaHistorial()" title="Agregar"><i class="fa-solid fa-paper-plane"></i></button>
                 </div>
             </div>
-
             <div class="modal-botones">
                 <button type="button" class="btn-cancelar" onclick="cerrarModalEditar()">Cancelar</button>
                 <button type="button" class="btn-guardar" onclick="guardarEdicion()">Guardar Cambios</button>
@@ -275,61 +241,72 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT -->
+    <!-- JAVASCRIPT CONECTADO A FIREBASE -->
     <script>
-        // BASE DE DATOS DE PACIENTES CON FOTOS
-        let pacientes = [
-            { id: '10000013', nombre: 'María Rodríguez', edad: 32, sexo: 'Mujer', telefono: '(02) 376 5920', obraSocial: 'OSDE', enfermedad: 'Asma leve', img: 'https://randomuser.me/api/portraits/women/44.jpg', historial: [{ fecha: '18/08/2026', texto: 'Paciente acude por control de rutina. (Dra. Silva)' }] },
-            { id: '10000253', nombre: 'Pedro Sánchez', edad: 60, sexo: 'Hombre', telefono: '(02) 375 5373', obraSocial: 'IPS Misiones', enfermedad: 'Hipertensión', img: 'https://randomuser.me/api/portraits/men/32.jpg', historial: [{ fecha: '01/08/2026', texto: 'Control de presión arterial. (Dr. Gómez)' }] }
-        ];
+        // CONFIGURACIÓN DE FIREBASE
+        const firebaseConfig = {
+            apiKey: "AIzaSyCw1uPXzT0BVcJeN06f-BGft7WVsTRmqKs",
+            authDomain: "app-gestion6.firebaseapp.com",
+            projectId: "app-gestion6",
+            storageBucket: "app-gestion6.firebasestorage.app",
+            messagingSenderId: "136361384216",
+            appId: "1:136361384216:web:2ccbda3508aa5ee579266d",
+            measurementId: "G-M81VW3QSFW"
+        };
 
-        // RENDERIZAR TABLA CON AVATARES
-        function renderizarTabla() {
-            const tbody = document.getElementById('tbody-pacientes');
-            tbody.innerHTML = ''; 
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-            pacientes.forEach((paciente, index) => {
-                let obraSocialMostrar = paciente.obraSocial || 'No asignada';
-                
-                let fila = `
-                    <tr>
-                        <td style="text-align: center; color: #718096;">${index + 1}.</td>
-                        
-                        <!-- AVATAR Y DATOS PRINCIPALES -->
-                        <td>
-                            <div class="user-cell">
-                                <div class="avatar"><img src="${paciente.img}" alt="foto"></div>
-                                <div class="user-info">
-                                    <strong>${paciente.nombre}</strong>
-                                    <small>${paciente.sexo}, ${paciente.edad} años</small>
+        let pacientesCache = []; // Almacena temporalmente los datos locales para los modales
+
+        // OBTENER DATOS EN TIEMPO REAL DESDE FIRESTORE
+        function escucharPacientes() {
+            db.collection("pacientes").onSnapshot((snapshot) => {
+                const tbody = document.getElementById('tbody-pacientes');
+                tbody.innerHTML = ''; 
+                pacientesCache = [];
+                let index = 0;
+
+                snapshot.forEach((doc) => {
+                    let paciente = doc.data();
+                    paciente.docId = doc.id;
+                    pacientesCache.push(paciente);
+
+                    let fila = `
+                        <tr>
+                            <td style="text-align: center; color: #718096;">${index + 1}.</td>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="avatar"><img src="${paciente.img}" alt="foto"></div>
+                                    <div class="user-info">
+                                        <strong>${paciente.nombre}</strong>
+                                        <small>${paciente.sexo}, ${paciente.edad} años</small>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        
-                        <td style="color: #4a5568;">${paciente.id}</td>
-                        <td style="color: #4a5568;"><i class="fa-solid fa-phone" style="font-size:12px; color:#a0aec0;"></i> ${paciente.telefono}</td>
-                        <td>${obraSocialMostrar}</td>
-                        
-                        <!-- BOTONES CUADRADOS -->
-                        <td>
-                            <div class="acciones-cell">
-                                <button class="btn-action-sq edit" title="Ficha y Editar" onclick="abrirModalEditar(${index})"><i class="fa-solid fa-address-card"></i></button>
-                                <button class="btn-action-sq delete" title="Eliminar" onclick="eliminarPaciente(${index})"><i class="fa-solid fa-trash-can"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                tbody.innerHTML += fila;
+                            </td>
+                            <td style="color: #4a5568;">${paciente.idDni}</td>
+                            <td style="color: #4a5568;"><i class="fa-solid fa-phone" style="font-size:12px; color:#a0aec0;"></i> ${paciente.telefono}</td>
+                            <td>${paciente.obraSocial || 'No asignada'}</td>
+                            <td>
+                                <div class="acciones-cell">
+                                    <button class="btn-action-sq edit" title="Ficha y Editar" onclick="abrirModalEditar('${paciente.docId}')"><i class="fa-solid fa-address-card"></i></button>
+                                    <button class="btn-action-sq delete" title="Eliminar" onclick="eliminarPaciente('${paciente.docId}')"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += fila;
+                    index++;
+                });
             });
         }
 
-        // BÚSQUEDA
         function filtrarPacientes() {
             let input = document.getElementById('inputBusqueda').value.toLowerCase();
             let filas = document.getElementById('tbody-pacientes').getElementsByTagName('tr');
             for (let i = 0; i < filas.length; i++) {
-                let celdaNombre = filas[i].getElementsByTagName('td')[1]; // Donde está el nombre
-                let celdaDNI = filas[i].getElementsByTagName('td')[2];    // Donde está el DNI
+                let celdaNombre = filas[i].getElementsByTagName('td')[1];
+                let celdaDNI = filas[i].getElementsByTagName('td')[2];
                 if (celdaNombre || celdaDNI) {
                     let texto = (celdaNombre.textContent || celdaNombre.innerText) + (celdaDNI.textContent || celdaDNI.innerText);
                     filas[i].style.display = texto.toLowerCase().indexOf(input) > -1 ? "" : "none";
@@ -337,139 +314,141 @@
             }
         }
 
-        // CAMBIAR TEXTO DEL BOTÓN DE SUBIR ARCHIVO
         function mostrarNombreArchivo(inputId, labelId) {
-            let input = document.getElementById(inputId);
+            let input = document.getElementById(inputId); 
             let label = document.getElementById(labelId);
-            if(input.files.length > 0) {
-                label.innerText = "¡Imagen cargada! (" + input.files[0].name + ")";
-                label.style.color = "#38b2ac";
-            } else {
-                label.innerText = "Haz clic para subir imagen";
-                label.style.color = "#4a5568";
+            if(input.files.length > 0) { 
+                label.innerText = "¡Imagen cargada!"; 
+                label.style.color = "#38b2ac"; 
             }
         }
 
-        // AGREGAR PACIENTE (CON LÓGICA DE FOTO)
         function abrirModalAgregar() { 
             document.getElementById('modalAgregar').style.display = 'flex'; 
             document.getElementById('addTextoArchivo').innerText = "Haz clic para subir imagen";
-            document.getElementById('addTextoArchivo').style.color = "#4a5568";
         }
         function cerrarModalAgregar() { document.getElementById('modalAgregar').style.display = 'none'; document.getElementById('formAgregar').reset(); }
 
+        // GUARDAR NUEVO PACIENTE EN FIREBASE
         document.getElementById('formAgregar').addEventListener('submit', function(e) {
             e.preventDefault();
-            
             let nombre = document.getElementById('addNombre').value;
             let sexo = document.getElementById('addSexo').value;
+            let imgStock = sexo === 'Hombre' ? 'https://cdn-icons-png.flaticon.com/512/4140/4140061.png' : 'https://cdn-icons-png.flaticon.com/512/4140/4140047.png';
+
             let archivoInput = document.getElementById('addFoto').files[0];
-            let urlFinalFoto = '';
+            let urlFinalFoto = archivoInput ? URL.createObjectURL(archivoInput) : imgStock;
 
-            // Lógica de Foto: Si subió archivo usa ese, sino usa foto de Stock según el sexo
-            if (archivoInput) {
-                urlFinalFoto = URL.createObjectURL(archivoInput); // Genera link temporal para mostrarla
-            } else {
-                // Fotos de stock gratuitas (Iconos genéricos)
-                urlFinalFoto = sexo === 'Hombre' 
-                    ? 'https://cdn-icons-png.flaticon.com/512/4140/4140061.png' 
-                    : 'https://cdn-icons-png.flaticon.com/512/4140/4140047.png';
-            }
-
-            pacientes.push({
-                id: document.getElementById('addId').value, 
+            db.collection("pacientes").add({
+                idDni: document.getElementById('addId').value,
                 nombre: nombre,
-                edad: document.getElementById('addEdad').value, 
+                edad: document.getElementById('addEdad').value,
                 sexo: sexo,
                 telefono: document.getElementById('addTelefono').value,
-                obraSocial: '', enfermedad: '', historial: [],
+                obraSocial: 'Particular',
+                enfermedad: '',
+                historial: [],
                 img: urlFinalFoto
+            }).then(() => {
+                cerrarModalAgregar();
+                Swal.fire({ title: '¡Guardado en la nube!', icon: 'success', timer: 1500, showConfirmButton: false });
             });
-
-            renderizarTabla(); 
-            cerrarModalAgregar();
-            Swal.fire({ title: '¡Paciente Registrado!', text: 'Se ha guardado correctamente.', icon: 'success', confirmButtonColor: '#38b2ac', timer: 2000, showConfirmButton: false });
         });
 
-        // EDITAR PACIENTE
-        function abrirModalEditar(index) {
-            let paciente = pacientes[index];
-            document.getElementById('editIndex').value = index; 
-            document.getElementById('editId').value = paciente.id; 
+        // ABRIR EDITAR DESDE CACHÉ LOCAL
+        function abrirModalEditar(docId) {
+            let paciente = pacientesCache.find(p => p.docId === docId);
+            if (!paciente) return;
+
+            document.getElementById('editDocId').value = docId; 
+            document.getElementById('editId').value = paciente.idDni; 
             document.getElementById('editNombre').value = paciente.nombre; 
             document.getElementById('editTelefono').value = paciente.telefono; 
             document.getElementById('editObraSocial').value = paciente.obraSocial || 'Particular'; 
             document.getElementById('editEnfermedad').value = paciente.enfermedad || '';
             
             document.getElementById('editTextoArchivo').innerText = "Subir nueva imagen";
-            document.getElementById('editTextoArchivo').style.color = "#4a5568";
-            document.getElementById('editFoto').value = ""; // Limpiar input de archivo
+            document.getElementById('editFoto').value = "";
 
-            renderizarHistorial(index, 'editListaHistorial'); 
+            renderizarHistorial(paciente.historial || [], 'editListaHistorial'); 
             document.getElementById('modalEditar').style.display = 'flex';
         }
         function cerrarModalEditar() { document.getElementById('modalEditar').style.display = 'none'; }
 
+        // GUARDAR CAMBIOS EN FIREBASE
         function guardarEdicion() {
+            let docId = document.getElementById('editDocId').value;
             Swal.fire({
-                title: '¿Guardar cambios?', icon: 'question', showCancelButton: true, confirmButtonColor: '#2b6cb0', cancelButtonColor: '#e2e8f0', cancelButtonText: '<span style="color: #4a5568;">Cancelar</span>', confirmButtonText: 'Sí, guardar'
+                title: '¿Guardar cambios?', icon: 'question', showCancelButton: true, confirmButtonColor: '#2b6cb0', cancelButtonColor: '#e2e8f0', confirmButtonText: 'Sí, guardar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    let index = document.getElementById('editIndex').value;
-                    pacientes[index].id = document.getElementById('editId').value; 
-                    pacientes[index].nombre = document.getElementById('editNombre').value; 
-                    pacientes[index].telefono = document.getElementById('editTelefono').value; 
-                    pacientes[index].obraSocial = document.getElementById('editObraSocial').value; 
-                    pacientes[index].enfermedad = document.getElementById('editEnfermedad').value;
-                    
-                    // Si subió foto nueva en Editar, la actualizamos
+                    let datosActualizados = {
+                        idDni: document.getElementById('editId').value,
+                        nombre: document.getElementById('editNombre').value,
+                        telefono: document.getElementById('editTelefono').value,
+                        obraSocial: document.getElementById('editObraSocial').value,
+                        enfermedad: document.getElementById('editEnfermedad').value
+                    };
+
                     let archivoInput = document.getElementById('editFoto').files[0];
                     if (archivoInput) {
-                        pacientes[index].img = URL.createObjectURL(archivoInput);
+                        datosActualizados.img = URL.createObjectURL(archivoInput);
                     }
 
-                    renderizarTabla(); 
-                    cerrarModalEditar();
-                    Swal.fire({ title: '¡Actualizado!', text: 'La ficha se guardó con éxito.', icon: 'success', confirmButtonColor: '#38b2ac' });
+                    db.collection("pacientes").doc(docId).update(datosActualizados).then(() => {
+                        cerrarModalEditar();
+                        Swal.fire({ title: '¡Actualizado en la nube!', icon: 'success', timer: 1500, showConfirmButton: false });
+                    });
                 }
             });
         }
 
-        // ELIMINAR PACIENTE
-        function eliminarPaciente(index) {
+        // ELIMINAR DE FIREBASE
+        function eliminarPaciente(docId) {
             Swal.fire({
-                title: '¿Estás seguro?', text: `Se eliminará todo el registro de ${pacientes[index].nombre}.`, icon: 'warning', showCancelButton: true, confirmButtonColor: '#e53e3e', cancelButtonColor: '#e2e8f0', cancelButtonText: '<span style="color:#4a5568;">Cancelar</span>', confirmButtonText: 'Sí, eliminar',
+                title: '¿Estás seguro?', text: "Se borrará permanentemente.", icon: 'warning', showCancelButton: true, confirmButtonColor: '#e53e3e', confirmButtonText: 'Sí, eliminar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    pacientes.splice(index, 1); renderizarTabla();
-                    Swal.fire({ title: '¡Eliminado!', text: 'El paciente fue borrado del sistema.', icon: 'success', confirmButtonColor: '#38b2ac' });
+                    db.collection("pacientes").doc(docId).delete().then(() => {
+                        Swal.fire({ title: '¡Eliminado!', icon: 'success', timer: 1500, showConfirmButton: false });
+                    });
                 }
             });
         }
 
-        // HISTORIAL CLÍNICO
-        function renderizarHistorial(index, elementoDestino) {
+        function renderizarHistorial(historial, elementoDestino) {
             const divHistorial = document.getElementById(elementoDestino); 
             divHistorial.innerHTML = ''; 
-            let historial = pacientes[index].historial;
-            if(historial.length === 0) { divHistorial.innerHTML = '<p style="color: #a0aec0; text-align: center; margin-top: 50px;">No hay registros clínicos aún.</p>'; return; }
-            [...historial].reverse().forEach(nota => { divHistorial.innerHTML += `<div class="nota-historial"><small><i class="fa-regular fa-clock"></i> ${nota.fecha}</small>${nota.texto}</div>`; });
+            if(historial.length === 0) { 
+                divHistorial.innerHTML = '<p style="color: #a0aec0; text-align: center; margin-top: 50px;">No hay registros clínicos aún.</p>'; 
+                return; 
+            }
+            [...historial].reverse().forEach(nota => { 
+                divHistorial.innerHTML += `<div class="nota-historial"><small><i class="fa-regular fa-clock"></i> ${nota.fecha}</small>${nota.texto}</div>`; 
+            });
         }
 
         function agregarNotaHistorial() {
-            let index = document.getElementById('editIndex').value; 
+            let docId = document.getElementById('editDocId').value;
             let inputNota = document.getElementById('inputNuevaNota');
             if (inputNota.value.trim() !== '') {
-                // Obtener la fecha real del sistema
                 let hoy = new Date(); 
                 let fechaFormateada = hoy.toLocaleDateString('es-AR');
-                pacientes[index].historial.push({ fecha: fechaFormateada, texto: inputNota.value.trim() });
-                inputNota.value = ''; 
-                renderizarHistorial(index, 'editListaHistorial'); 
+                let nuevaNota = { fecha: fechaFormateada, texto: inputNota.value.trim() };
+
+                let paciente = pacientesCache.find(p => p.docId === docId);
+                let historialActual = paciente.historial || [];
+                historialActual.push(nuevaNota);
+
+                db.collection("pacientes").doc(docId).update({ historial: historialActual }).then(() => {
+                    inputNota.value = '';
+                    renderizarHistorial(historialActual, 'editListaHistorial');
+                });
             }
         }
 
-        renderizarTabla();
+        // Iniciar escucha en tiempo real
+        escucharPacientes();
     </script>
 </body>
 </html>
