@@ -6,13 +6,14 @@
     <title>Consultorio - Citas</title>
     <!-- Iconos Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- LIBRERÍA PREMIUM PARA POP-UPS (SweetAlert2) -->
+    <!-- SweetAlert2 para Pop-ups Premium -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
+    <!-- FIREBASE SDKs (Compat) -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
     <style>
-        /* =========================================
-           PALETA DE COLORES Y DISEÑO BASE
-           ========================================= */
         :root {
             --primary-color: #1a365d;   
             --secondary-color: #2b6cb0; 
@@ -43,7 +44,6 @@
         .btn-nuevo { background-color: var(--accent-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; font-size: 15px; cursor: pointer; font-weight: bold; transition: all 0.2s; display: flex; align-items: center; gap: 8px; }
         .btn-nuevo:hover { background-color: #319795; transform: translateY(-2px); }
 
-        /* BARRA DE CONTROLES (Filtros y Buscador) */
         .table-controls { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
         .filters { display: flex; gap: 10px; }
         .btn-filter { background-color: #e2e8f0; color: #4a5568; border: none; padding: 8px 16px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
@@ -55,7 +55,7 @@
         .search-bar input { padding: 10px 10px 10px 35px; border: 1px solid #cbd5e0; border-radius: 8px; width: 300px; font-size: 14px; outline: none; transition: border-color 0.3s; }
         .search-bar input:focus { border-color: var(--secondary-color); }
 
-        /* TABLA REDISEÑADA */
+        /* TABLA */
         .table-container { background: white; border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
         th { background-color: var(--table-header); color: white; font-weight: 600; padding: 16px; text-align: left; font-size: 14px;}
@@ -68,7 +68,6 @@
         .user-info strong { font-size: 15px; color: var(--primary-color); margin-bottom: 2px;}
         .user-info small { font-size: 12px; color: #718096; }
 
-        /* ESTADOS AVANZADOS */
         .estado { padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: bold; text-align: center; display: inline-block; min-width: 90px;}
         .estado.pendiente { background-color: #e2e8f0; color: #4a5568; } 
         .estado.confirmada { background-color: #10b981; color: white; } 
@@ -78,7 +77,6 @@
         .estado.cancelada, .estado.ausente { background-color: #ef4444; color: white; } 
         .estado.reagendada { background-color: #feebc8; color: #c05621; } 
 
-        /* BOTONES CUADRADOS */
         .acciones-cell { display: flex; gap: 8px; }
         .btn-action-sq { width: 35px; height: 35px; border: none; border-radius: 6px; cursor: pointer; display: flex; justify-content: center; align-items: center; font-size: 14px; transition: all 0.2s; }
         .btn-action-sq.view { background-color: #e6fffa; color: #319795; }
@@ -90,7 +88,7 @@
         .btn-action-sq.delete { background-color: #fee2e2; color: #dc2626; }
         .btn-action-sq.delete:hover { background-color: #fca5a5; }
 
-        /* MODALES PREMIUM */
+        /* MODALES */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(5px); justify-content: center; align-items: center; z-index: 1000; animation: fadeIn 0.3s forwards; }
         .modal { background: white; padding: 35px; border-radius: 20px; width: 450px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); max-height: 90vh; overflow-y: auto; position: relative; animation: slideUpScale 0.4s forwards; }
         .modal h2 { margin-top: 0; color: var(--primary-color); border-bottom: 2px solid var(--bg-color); padding-bottom: 10px; font-size: 22px;}
@@ -122,7 +120,6 @@
 </head>
 <body>
 
-    <!-- MENÚ LATERAL -->
     <aside class="sidebar">
         <h2><i class="fa-solid fa-notes-medical"></i> Consultorio</h2>
         <ul class="nav-links">
@@ -134,9 +131,7 @@
         </ul>
     </aside>
 
-    <!-- CONTENIDO PRINCIPAL -->
     <main class="main-content">
-        
         <div class="header-top">
             <h1>Citas Programadas</h1>
             <button class="btn-nuevo" onclick="abrirModalCita()">
@@ -157,7 +152,6 @@
             </div>
         </div>
 
-        <!-- TABLA -->
         <section class="table-container">
             <table id="tabla-citas">
                 <thead>
@@ -172,13 +166,13 @@
                     </tr>
                 </thead>
                 <tbody id="tbody-citas">
-                    <!-- JS inyecta datos aquí -->
+                    <!-- Firebase inyecta datos en tiempo real -->
                 </tbody>
             </table>
         </section>
     </main>
 
-    <!-- MODAL 1: AGENDAR CITA (Con detalle de consulta) -->
+    <!-- MODALES -->
     <div class="modal-overlay" id="modalCita">
         <div class="modal">
             <button class="btn-cerrar-x" onclick="cerrarModalCita()"><i class="fa-solid fa-xmark"></i></button>
@@ -212,7 +206,7 @@
                 </div>
                 <div class="form-group">
                     <label>Detalle de la Consulta (Adjunto para el médico)</label>
-                    <textarea id="inputDetalle" placeholder="Describa síntomas, motivo o información relevante..."></textarea>
+                    <textarea id="inputDetalle" placeholder="Describa síntomas o información..."></textarea>
                 </div>
                 <div class="modal-botones">
                     <button type="button" class="btn-cancelar" onclick="cerrarModalCita()">Cancelar</button>
@@ -222,7 +216,6 @@
         </div>
     </div>
 
-    <!-- MODAL 2: REGISTRO RÁPIDO -->
     <div class="modal-overlay" id="modalPacienteRapido">
         <div class="modal">
             <button class="btn-cerrar-x" onclick="cerrarModalPacienteRapido()"><i class="fa-solid fa-xmark"></i></button>
@@ -242,12 +235,10 @@
         </div>
     </div>
 
-    <!-- MODAL 3: VER DETALLE DE LA CITA (NUEVO) -->
     <div class="modal-overlay" id="modalVerCita">
         <div class="modal">
             <button class="btn-cerrar-x" onclick="cerrarModalVerCita()"><i class="fa-solid fa-xmark"></i></button>
             <h2><i class="fa-solid fa-eye" style="color: var(--accent-color);"></i> Detalle de la Cita</h2>
-            
             <div class="info-resumen">
                 <strong>Paciente:</strong> <span id="verCitaPaciente"></span> <br>
                 <strong>Médico Asignado:</strong> <span id="verCitaMedico"></span> <br>
@@ -255,29 +246,21 @@
                 <strong>Tipo de Cita:</strong> <span id="verCitaCategoria"></span> <br>
                 <strong>Estado:</strong> <span id="verCitaEstado"></span>
             </div>
-
             <div class="form-group">
-                <label>Detalle de la consulta adjunto para el médico:</label>
-                <div class="info-box" id="verCitaDetalle" style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; min-height: 80px; max-height: 150px; overflow-y: auto; white-space: pre-wrap; font-size: 14px; color: #4a5568;"></div>
+                <label>Detalle de la consulta:</label>
+                <div class="info-box" id="verCitaDetalle" style="background: #f8fafc; padding: 12px; border-radius: 8px; border: 1px solid #e2e8f0; min-height: 80px; font-size: 14px; color: #4a5568;"></div>
             </div>
-
-            <div class="modal-botones">
-                <button type="button" class="btn-cancelar" onclick="cerrarModalVerCita()">Cerrar</button>
-            </div>
+            <div class="modal-botones"><button type="button" class="btn-cancelar" onclick="cerrarModalVerCita()">Cerrar</button></div>
         </div>
     </div>
 
-    <!-- MODAL 4: EDITAR DATOS DE LA CITA -->
     <div class="modal-overlay" id="modalEditarCita">
         <div class="modal">
             <button class="btn-cerrar-x" onclick="cerrarModalEditarCita()"><i class="fa-solid fa-xmark"></i></button>
             <h2><i class="fa-solid fa-pen-to-square" style="color: var(--secondary-color);"></i> Modificar Cita</h2>
             <form id="formEditarCita">
-                <input type="hidden" id="editCitaIndex">
-                <div class="form-group">
-                    <label>Paciente</label>
-                    <input type="text" id="editPaciente" readonly style="background-color: #f8fafc; color: #718096; cursor: not-allowed;" title="El paciente no se puede cambiar aquí">
-                </div>
+                <input type="hidden" id="editDocId">
+                <div class="form-group"><label>Paciente</label><input type="text" id="editPaciente" readonly style="background-color: #f8fafc; color: #718096; cursor: not-allowed;"></div>
                 <div class="form-row">
                     <div class="form-group"><label>Fecha</label><input type="date" id="editFecha" required></div>
                     <div class="form-group"><label>Hora</label><input type="time" id="editHora" required></div>
@@ -297,10 +280,7 @@
                         <option value="Dr. Carlos López">Dr. Carlos López</option>
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Detalle de la Consulta</label>
-                    <textarea id="editDetalle" placeholder="Detalle o motivo..."></textarea>
-                </div>
+                <div class="form-group"><label>Detalle de la Consulta</label><textarea id="editDetalle"></textarea></div>
                 <div class="modal-botones">
                     <button type="button" class="btn-cancelar" onclick="cerrarModalEditarCita()">Cancelar</button>
                     <button type="submit" class="btn-guardar">Confirmar Cambios</button>
@@ -309,41 +289,33 @@
         </div>
     </div>
 
-    <!-- MODAL 5: GESTIONAR RECEPCIÓN -->
     <div class="modal-overlay" id="modalGestionar">
         <div class="modal">
             <button class="btn-cerrar-x" onclick="cerrarModalGestionar()"><i class="fa-solid fa-xmark"></i></button>
             <h2><i class="fa-solid fa-clipboard-user" style="color: #d69e2e;"></i> Gestión de Recepción</h2>
-            
             <div class="info-resumen">
                 <strong>Paciente:</strong> <span id="gestionPaciente"></span> <br>
                 <strong>Médico:</strong> <span id="gestionMedico"></span> <br>
                 <strong>Horario Actual:</strong> <span id="gestionHorario"></span>
             </div>
-
             <form id="formGestion">
-                <input type="hidden" id="gestionIndex">
+                <input type="hidden" id="gestionDocId">
                 <div class="form-group">
                     <label>Actualizar Estado</label>
                     <select id="gestionEstadoSelect" onchange="verificarReagendo()" required>
-                        <option value="Pendiente">Pendiente (Por confirmar)</option>
-                        <option value="Confirmada">Confirmada (Viene en camino)</option>
-                        <option value="En Espera">En Espera (Ya llegó al consultorio)</option>
-                        <option value="En Atención">En Atención (Está con el médico)</option>
-                        <option value="Realizada">Realizada (Finalizada exitosamente)</option>
-                        <option value="No se presentó">No se presentó (Ausente)</option>
+                        <option value="Pendiente">Pendiente</option>
+                        <option value="Confirmada">Confirmada</option>
+                        <option value="En Espera">En Espera</option>
+                        <option value="En Atención">En Atención</option>
+                        <option value="Realizada">Realizada</option>
+                        <option value="No se presentó">No se presentó</option>
                         <option value="Cancelada">Cancelada</option>
                         <option value="Reagendada" style="font-weight: bold; color: #dd6b20;">Reagendada / Reasignar</option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label>Anotaciones (Opcional)</label>
-                    <textarea id="gestionNota" placeholder="Ej: Llamó para avisar que llega 10 min tarde..."></textarea>
-                </div>
-
+                <div class="form-group"><label>Anotaciones</label><textarea id="gestionNota" placeholder="Anotación..."></textarea></div>
                 <div id="divReagendar">
-                    <h4 style="margin-top:0; color: #c05621;"><i class="fa-solid fa-calendar-rotate"></i> Nuevos Datos de Cita</h4>
+                    <h4 style="margin-top:0; color: #c05621;"><i class="fa-solid fa-calendar-rotate"></i> Nuevos Datos</h4>
                     <div class="form-row">
                         <div class="form-group"><label>Nueva Fecha</label><input type="date" id="reFecha"></div>
                         <div class="form-group"><label>Nueva Hora</label><input type="time" id="reHora"></div>
@@ -356,7 +328,6 @@
                         </select>
                     </div>
                 </div>
-
                 <div class="modal-botones">
                     <button type="button" class="btn-cancelar" onclick="cerrarModalGestionar()">Cancelar</button>
                     <button type="submit" class="btn-guardar">Actualizar Estado</button>
@@ -365,77 +336,101 @@
         </div>
     </div>
 
-    <!-- JAVASCRIPT -->
+    <!-- JAVASCRIPT CONECTADO A FIREBASE -->
     <script>
-        let pacientesBD = [
-            { id: '1234', nombre: 'Juan Pérez', edad: 45, sexo: 'Hombre', img: 'https://randomuser.me/api/portraits/men/32.jpg' },
-            { id: '5678', nombre: 'María Rodríguez', edad: 32, sexo: 'Mujer', img: 'https://randomuser.me/api/portraits/women/44.jpg' }
-        ];
+        const firebaseConfig = {
+            apiKey: "AIzaSyCw1uPXzT0BVcJeN06f-BGft7WVsTRmqKs",
+            authDomain: "app-gestion6.firebaseapp.com",
+            projectId: "app-gestion6",
+            storageBucket: "app-gestion6.firebasestorage.app",
+            messagingSenderId: "136361384216",
+            appId: "1:136361384216:web:2ccbda3508aa5ee579266d",
+            measurementId: "G-M81VW3QSFW"
+        };
 
-        let citas = [
-            { id: 1, fecha: '2026-08-20', hora: '10:30', paciente: pacientesBD[0], medico: { nombre: 'Dra. Ana García', img: 'https://randomuser.me/api/portraits/women/68.jpg' }, categoria: 'Consulta General', detalle: 'Paciente refiere dolor de cabeza leve y mareos ocasionales por la mañana.', estado: 'Confirmada' },
-            { id: 2, fecha: '2026-08-20', hora: '11:15', paciente: pacientesBD[1], medico: { nombre: 'Dr. Carlos López', img: 'https://randomuser.me/api/portraits/men/60.jpg' }, categoria: 'Chequeo Anual', detalle: 'Control general de rutina anual y análisis de sangre.', estado: 'Realizada' }
-        ];
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
 
-        function renderizarTabla() {
-            const tbody = document.getElementById('tbody-citas');
-            tbody.innerHTML = ''; 
+        let pacientesCache = [];
+        let citasCache = [];
 
-            citas.forEach((cita, index) => {
-                let partesFecha = cita.fecha.split('-');
-                let meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-                let fechaCorta = `${partesFecha[2]} ${meses[parseInt(partesFecha[1])-1]} ${partesFecha[0]}`;
-                
-                let claseEstado = '';
-                if(cita.estado === 'Pendiente') claseEstado = 'estado pendiente';
-                if(cita.estado === 'Confirmada') claseEstado = 'estado confirmada';
-                if(cita.estado === 'En Espera') claseEstado = 'estado espera';
-                if(cita.estado === 'En Atención') claseEstado = 'estado atencion';
-                if(cita.estado === 'Realizada') claseEstado = 'estado realizada';
-                if(cita.estado === 'No se presentó' || cita.estado === 'Cancelada') claseEstado = 'estado cancelada';
-                if(cita.estado === 'Reagendada') claseEstado = 'estado reagendada';
+        // ESCUCHAR PACIENTES (Para el selector de citas)
+        db.collection("pacientes").onSnapshot((snapshot) => {
+            pacientesCache = [];
+            snapshot.forEach((doc) => {
+                let p = doc.data();
+                p.docId = doc.id;
+                pacientesCache.push(p);
+            });
+        });
 
-                let bloqueada = (cita.estado === 'Realizada' || cita.estado === 'Cancelada' || cita.estado === 'No se presentó');
-                let estiloFila = bloqueada ? 'opacity: 0.75;' : '';
-                let iconoCandado = bloqueada ? ' <i class="fa-solid fa-lock" style="color:#a0aec0; font-size:12px;" title="Registro Cerrado"></i>' : '';
+        // ESCUCHAR CITAS EN TIEMPO REAL DESDE FIREBASE
+        function escucharCitas() {
+            db.collection("citas").onSnapshot((snapshot) => {
+                const tbody = document.getElementById('tbody-citas');
+                tbody.innerHTML = ''; 
+                citasCache = [];
+                let index = 0;
 
-                let fila = `
-                    <tr style="${estiloFila}">
-                        <td style="text-align: center; color: #718096;">${index + 1}.</td>
-                        <td>
-                            <div style="color: var(--text-color); font-weight:600;">${fechaCorta}</div>
-                            <div style="color: #718096; font-size: 13px;"><i class="fa-regular fa-clock"></i> ${cita.hora} hs</div>
-                        </td>
-                        <td>
-                            <div class="user-cell">
-                                <div class="avatar"><img src="${cita.paciente.img}" alt="foto"></div>
-                                <div class="user-info">
-                                    <strong>${cita.paciente.nombre}</strong>
-                                    <small>${cita.paciente.sexo}, ${cita.paciente.edad} años</small>
+                snapshot.forEach((doc) => {
+                    let cita = doc.data();
+                    cita.docId = doc.id;
+                    citasCache.push(cita);
+
+                    let partesFecha = cita.fecha.split('-');
+                    let meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+                    let fechaCorta = `${partesFecha[2]} ${meses[parseInt(partesFecha[1])-1]} ${partesFecha[0]}`;
+                    
+                    let claseEstado = '';
+                    if(cita.estado === 'Pendiente') claseEstado = 'estado pendiente';
+                    if(cita.estado === 'Confirmada') claseEstado = 'estado confirmada';
+                    if(cita.estado === 'En Espera') claseEstado = 'estado espera';
+                    if(cita.estado === 'En Atención') claseEstado = 'estado atencion';
+                    if(cita.estado === 'Realizada') claseEstado = 'estado realizada';
+                    if(cita.estado === 'No se presentó' || cita.estado === 'Cancelada') claseEstado = 'estado cancelada';
+                    if(cita.estado === 'Reagendada') claseEstado = 'estado reagendada';
+
+                    let bloqueada = (cita.estado === 'Realizada' || cita.estado === 'Cancelada' || cita.estado === 'No se presentó');
+                    let estiloFila = bloqueada ? 'opacity: 0.75;' : '';
+                    let iconoCandado = bloqueada ? ' <i class="fa-solid fa-lock" style="color:#a0aec0; font-size:12px;" title="Cerrado"></i>' : '';
+
+                    let fila = `
+                        <tr style="${estiloFila}">
+                            <td style="text-align: center; color: #718096;">${index + 1}.</td>
+                            <td>
+                                <div style="color: var(--text-color); font-weight:600;">${fechaCorta}</div>
+                                <div style="color: #718096; font-size: 13px;"><i class="fa-regular fa-clock"></i> ${cita.hora} hs</div>
+                            </td>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="avatar"><img src="${cita.paciente.img}" alt="foto"></div>
+                                    <div class="user-info">
+                                        <strong>${cita.paciente.nombre}</strong>
+                                        <small>${cita.paciente.sexo}, ${cita.paciente.edad} años</small>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>
-                            <div class="user-cell">
-                                <div class="avatar"><img src="${cita.medico.img}" alt="foto"></div>
-                                <div class="user-info">
-                                    <strong>${cita.medico.nombre}</strong>
+                            </td>
+                            <td>
+                                <div class="user-cell">
+                                    <div class="avatar"><img src="${cita.medico.img}" alt="foto"></div>
+                                    <div class="user-info"><strong>${cita.medico.nombre}</strong></div>
                                 </div>
-                            </div>
-                        </td>
-                        <td>${cita.categoria}</td>
-                        <td><span class="${claseEstado}">${cita.estado}</span>${iconoCandado}</td>
-                        <td>
-                            <div class="acciones-cell">
-                                <button class="btn-action-sq view" title="Ver Detalle" onclick="abrirModalVerCita(${index})"><i class="fa-solid fa-eye"></i></button>
-                                <button class="btn-action-sq manage" title="Gestionar Recepción" onclick="abrirModalGestionar(${index})"><i class="fa-solid fa-share-from-square"></i></button>
-                                <button class="btn-action-sq edit" title="Modificar Datos" onclick="abrirModalEditarCita(${index})"><i class="fa-solid fa-pen"></i></button>
-                                <button class="btn-action-sq delete" title="Eliminar" onclick="eliminarCita(${index})"><i class="fa-solid fa-trash-can"></i></button>
-                            </div>
-                        </td>
-                    </tr>
-                `;
-                tbody.innerHTML += fila;
+                            </td>
+                            <td>${cita.categoria}</td>
+                            <td><span class="${claseEstado}">${cita.estado}</span>${iconoCandado}</td>
+                            <td>
+                                <div class="acciones-cell">
+                                    <button class="btn-action-sq view" title="Ver Detalle" onclick="abrirModalVerCita('${cita.docId}')"><i class="fa-solid fa-eye"></i></button>
+                                    <button class="btn-action-sq manage" title="Gestión" onclick="abrirModalGestionar('${cita.docId}')"><i class="fa-solid fa-share-from-square"></i></button>
+                                    <button class="btn-action-sq edit" title="Modificar" onclick="abrirModalEditarCita('${cita.docId}')"><i class="fa-solid fa-pen"></i></button>
+                                    <button class="btn-action-sq delete" title="Eliminar" onclick="eliminarCita('${cita.docId}')"><i class="fa-solid fa-trash-can"></i></button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += fila;
+                    index++;
+                });
             });
         }
 
@@ -452,33 +447,15 @@
             }
         }
 
-        // ==============================================
-        // VER DETALLE DE LA CITA (NUEVO)
-        // ==============================================
-        function abrirModalVerCita(index) {
-            let cita = citas[index];
-            document.getElementById('verCitaPaciente').innerText = cita.paciente.nombre;
-            document.getElementById('verCitaMedico').innerText = cita.medico.nombre;
-            
-            let partesFecha = cita.fecha.split('-');
-            document.getElementById('verCitaFechaHora').innerText = `${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]} a las ${cita.hora} hs`;
-            document.getElementById('verCitaCategoria').innerText = cita.categoria;
-            document.getElementById('verCitaEstado').innerText = cita.estado;
-            document.getElementById('verCitaDetalle').innerText = cita.detalle ? cita.detalle : 'No se especificó ningún detalle para esta consulta.';
-            
-            document.getElementById('modalVerCita').style.display = 'flex';
-        }
-        function cerrarModalVerCita() { document.getElementById('modalVerCita').style.display = 'none'; }
-
-        // AGREGAR CITA
-        function cargarPacientesSelect(pacienteSeleccionado = "") {
+        // AGREGAR CITA A FIREBASE
+        function cargarPacientesSelect(nombreSel = "") {
             const select = document.getElementById('inputPaciente');
             select.innerHTML = '<option value="">Seleccione un paciente...</option>'; 
-            pacientesBD.forEach(paciente => { 
+            pacientesCache.forEach(p => { 
                 let option = document.createElement('option'); 
-                option.value = paciente.id; 
-                option.text = `${paciente.nombre} (DNI: ${paciente.id})`; 
-                if(paciente.nombre === pacienteSeleccionado) option.selected = true;
+                option.value = p.docId; 
+                option.text = `${p.nombre} (DNI: ${p.idDni})`; 
+                if(p.nombre === nombreSel) option.selected = true;
                 select.appendChild(option); 
             });
         }
@@ -487,25 +464,26 @@
         
         document.getElementById('formCita').addEventListener('submit', function(e) {
             e.preventDefault(); 
-            let idSeleccionado = document.getElementById('inputPaciente').value;
-            let pacienteEncontrado = pacientesBD.find(p => p.id === idSeleccionado);
+            let docIdPaciente = document.getElementById('inputPaciente').value;
+            let pacienteEncontrado = pacientesCache.find(p => p.docId === docIdPaciente);
             let nombreMedico = document.getElementById('inputMedico').value;
             let imgMedico = nombreMedico.includes('Ana') ? 'https://randomuser.me/api/portraits/women/68.jpg' : 'https://randomuser.me/api/portraits/men/60.jpg';
 
-            citas.push({ 
+            db.collection("citas").add({
                 fecha: document.getElementById('inputFecha').value, 
                 hora: document.getElementById('inputHora').value, 
                 paciente: pacienteEncontrado, 
                 medico: { nombre: nombreMedico, img: imgMedico }, 
                 categoria: document.getElementById('inputCategoria').value,
                 detalle: document.getElementById('inputDetalle').value,
-                estado: 'Pendiente' 
+                estado: 'Pendiente'
+            }).then(() => {
+                cerrarModalCita(); 
+                Swal.fire({ title: '¡Agendada en la nube!', icon: 'success', timer: 1500, showConfirmButton: false });
             });
-            renderizarTabla(); cerrarModalCita(); 
-            Swal.fire({ title: '¡Agendada!', text: 'Cita programada correctamente.', icon: 'success', confirmButtonColor: '#38b2ac', timer: 2000, showConfirmButton: false });
         });
 
-        // REGISTRO RÁPIDO
+        // REGISTRO RÁPIDO DE PACIENTE
         function abrirModalPacienteRapido() { document.getElementById('modalPacienteRapido').style.display = 'flex'; }
         function cerrarModalPacienteRapido() { document.getElementById('modalPacienteRapido').style.display = 'none'; }
         
@@ -513,35 +491,52 @@
             e.preventDefault(); 
             let nuevoNombre = document.getElementById('rapidoNombre').value;
             let sexo = document.getElementById('rapidoSexo').value;
-            let imgAvatar = sexo === 'Hombre' ? 'https://cdn-icons-png.flaticon.com/512/4140/4140061.png' : 'https://cdn-icons-png.flaticon.com/512/4140/4140047.png';
+            let imgStock = sexo === 'Hombre' ? 'https://cdn-icons-png.flaticon.com/512/4140/4140061.png' : 'https://cdn-icons-png.flaticon.com/512/4140/4140047.png';
             
-            pacientesBD.push({ 
-                id: document.getElementById('rapidoId').value, 
+            db.collection("pacientes").add({
+                idDni: document.getElementById('rapidoId').value, 
                 nombre: nuevoNombre,
                 edad: document.getElementById('rapidoEdad').value,
                 sexo: sexo,
-                img: imgAvatar
+                telefono: 'Sin especificar',
+                obraSocial: 'Particular',
+                enfermedad: '',
+                historial: [],
+                img: imgStock
+            }).then((docRef) => {
+                cerrarModalPacienteRapido();
+                cargarPacientesSelect(nuevoNombre);
+                Swal.fire({ title: '¡Paciente creado!', icon: 'success', timer: 1500, showConfirmButton: false });
             });
-            cargarPacientesSelect(nuevoNombre); 
-            cerrarModalPacienteRapido(); 
-            Swal.fire({ title: '¡Registrado!', text: 'El paciente fue añadido a la base y seleccionado.', icon: 'success', confirmButtonColor: '#38b2ac', timer: 2000, showConfirmButton: false });
         });
 
+        // VER DETALLE
+        function abrirModalVerCita(docId) {
+            let cita = citasCache.find(c => c.docId === docId);
+            if(!cita) return;
+
+            document.getElementById('verCitaPaciente').innerText = cita.paciente.nombre;
+            document.getElementById('verCitaMedico').innerText = cita.medico.nombre;
+            let partesFecha = cita.fecha.split('-');
+            document.getElementById('verCitaFechaHora').innerText = `${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]} a las ${cita.hora} hs`;
+            document.getElementById('verCitaCategoria').innerText = cita.categoria;
+            document.getElementById('verCitaEstado').innerText = cita.estado;
+            document.getElementById('verCitaDetalle').innerText = cita.detalle || 'Sin detalles.';
+            document.getElementById('modalVerCita').style.display = 'flex';
+        }
+        function cerrarModalVerCita() { document.getElementById('modalVerCita').style.display = 'none'; }
+
         // EDITAR CITA (CON REGLA DE SOLO LECTURA)
-        function abrirModalEditarCita(index) {
-            let cita = citas[index];
+        function abrirModalEditarCita(docId) {
+            let cita = citasCache.find(c => c.docId === docId);
+            if (!cita) return;
             
             if (cita.estado === 'Realizada' || cita.estado === 'Cancelada' || cita.estado === 'No se presentó') {
-                Swal.fire({
-                    title: 'Cita en Solo Lectura 🔒',
-                    text: 'Esta cita ya fue ejecutada o cancelada. Por motivos de auditoría, no se pueden alterar sus datos.',
-                    icon: 'info',
-                    confirmButtonColor: '#38b2ac'
-                });
+                Swal.fire({ title: 'Cita en Solo Lectura 🔒', text: 'Esta cita ya fue ejecutada o cancelada. No se puede modificar.', icon: 'info', confirmButtonColor: '#38b2ac' });
                 return;
             }
 
-            document.getElementById('editCitaIndex').value = index;
+            document.getElementById('editDocId').value = docId;
             document.getElementById('editPaciente').value = cita.paciente.nombre;
             document.getElementById('editFecha').value = cita.fecha;
             document.getElementById('editHora').value = cita.hora;
@@ -554,47 +549,43 @@
 
         document.getElementById('formEditarCita').addEventListener('submit', function(e) {
             e.preventDefault();
+            let docId = document.getElementById('editDocId').value;
             Swal.fire({
-                title: '¿Confirmar modificación?', icon: 'question', showCancelButton: true,
-                confirmButtonColor: '#2b6cb0', cancelButtonColor: '#e2e8f0', cancelButtonText: '<span style="color: #4a5568;">Cancelar</span>', confirmButtonText: 'Guardar'
+                title: '¿Confirmar modificación?', icon: 'question', showCancelButton: true, confirmButtonColor: '#2b6cb0', confirmButtonText: 'Guardar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    let index = document.getElementById('editCitaIndex').value;
                     let nombreMedico = document.getElementById('editMedico').value;
                     let imgMedico = nombreMedico.includes('Ana') ? 'https://randomuser.me/api/portraits/women/68.jpg' : 'https://randomuser.me/api/portraits/men/60.jpg';
 
-                    citas[index].fecha = document.getElementById('editFecha').value;
-                    citas[index].hora = document.getElementById('editHora').value;
-                    citas[index].categoria = document.getElementById('editCategoria').value;
-                    citas[index].medico = { nombre: nombreMedico, img: imgMedico };
-                    citas[index].detalle = document.getElementById('editDetalle').value;
-                    
-                    renderizarTabla(); cerrarModalEditarCita();
-                    Swal.fire({ title: '¡Actualizado!', text: 'Cambio realizado exitosamente.', icon: 'success', confirmButtonColor: '#38b2ac' });
+                    db.collection("citas").doc(docId).update({
+                        fecha: document.getElementById('editFecha').value,
+                        hora: document.getElementById('editHora').value,
+                        categoria: document.getElementById('editCategoria').value,
+                        medico: { nombre: nombreMedico, img: imgMedico },
+                        detalle: document.getElementById('editDetalle').value
+                    }).then(() => {
+                        cerrarModalEditarCita();
+                        Swal.fire({ title: '¡Actualizado en la nube!', icon: 'success', timer: 1500, showConfirmButton: false });
+                    });
                 }
             });
         });
 
-        // GESTIÓN DE RECEPCIÓN (CON REGLA DE SOLO LECTURA)
-        function abrirModalGestionar(index) {
-            let cita = citas[index]; 
+        // GESTIÓN DE RECEPCIÓN
+        function abrirModalGestionar(docId) {
+            let cita = citasCache.find(c => c.docId === docId);
+            if (!cita) return;
             
             if (cita.estado === 'Realizada' || cita.estado === 'Cancelada' || cita.estado === 'No se presentó') {
-                Swal.fire({
-                    title: 'Recepción Bloqueada 🔒',
-                    text: `El estado de esta cita es "${cita.estado}" y ya está cerrado. No se puede gestionar su recepción.`,
-                    icon: 'error',
-                    confirmButtonColor: '#e53e3e'
-                });
+                Swal.fire({ title: 'Recepción Bloqueada 🔒', text: `La cita está en estado "${cita.estado}" y ya está cerrada.`, icon: 'error', confirmButtonColor: '#e53e3e' });
                 return;
             }
 
-            document.getElementById('gestionIndex').value = index; 
+            document.getElementById('gestionDocId').value = docId; 
             document.getElementById('gestionPaciente').innerText = cita.paciente.nombre; 
             document.getElementById('gestionMedico').innerText = cita.medico.nombre;
             let partesFecha = cita.fecha.split('-');
             document.getElementById('gestionHorario').innerText = `${partesFecha[2]}/${partesFecha[1]}/${partesFecha[0]} a las ${cita.hora} hs`;
-            
             document.getElementById('gestionEstadoSelect').value = cita.estado; 
             document.getElementById('gestionNota').value = ''; 
             verificarReagendo(); 
@@ -618,40 +609,43 @@
 
         document.getElementById('formGestion').addEventListener('submit', function(e) {
             e.preventDefault();
-            let index = document.getElementById('gestionIndex').value; 
+            let docId = document.getElementById('gestionDocId').value;
             let nuevoEstado = document.getElementById('gestionEstadoSelect').value;
+            let datosUpdate = {};
             
             if (nuevoEstado === 'Reagendada') {
                 let nombreMedico = document.getElementById('reMedico').value;
                 let imgMedico = nombreMedico.includes('Ana') ? 'https://randomuser.me/api/portraits/women/68.jpg' : 'https://randomuser.me/api/portraits/men/60.jpg';
-
-                citas[index].fecha = document.getElementById('reFecha').value; 
-                citas[index].hora = document.getElementById('reHora').value;
-                citas[index].medico = { nombre: nombreMedico, img: imgMedico }; 
-                citas[index].estado = 'Pendiente'; 
-                
-                Swal.fire({ title: '¡Reagendada!', text: 'La cita fue reasignada con éxito a ' + nombreMedico, icon: 'success', confirmButtonColor: '#dd6b20' });
-            } else { 
-                citas[index].estado = nuevoEstado; 
-                Swal.fire({ title: 'Estado Actualizado', text: `La cita ahora está en: ${nuevoEstado}`, icon: 'success', confirmButtonColor: '#38b2ac', timer: 1500, showConfirmButton: false });
+                datosUpdate.fecha = document.getElementById('reFecha').value;
+                datosUpdate.hora = document.getElementById('reHora').value;
+                datosUpdate.medico = { nombre: nombreMedico, img: imgMedico };
+                datosUpdate.estado = 'Pendiente';
+            } else {
+                datosUpdate.estado = nuevoEstado;
             }
-            renderizarTabla(); cerrarModalGestionar();
+
+            db.collection("citas").doc(docId).update(datosUpdate).then(() => {
+                cerrarModalGestionar();
+                Swal.fire({ title: '¡Estado Actualizado!', icon: 'success', timer: 1500, showConfirmButton: false });
+            });
         });
 
         // ELIMINAR CITA
-        function eliminarCita(index) {
+        function eliminarCita(docId) {
             Swal.fire({
-                title: '¿Estás seguro?', text: `Se eliminará la cita de ${citas[index].paciente.nombre}.`, icon: 'warning',
-                showCancelButton: true, confirmButtonColor: '#e53e3e', cancelButtonColor: '#e2e8f0', cancelButtonText: '<span style="color:#4a5568;">Cancelar</span>', confirmButtonText: 'Sí, eliminar',
+                title: '¿Estás seguro?', text: "Se eliminará esta cita de la base de datos.", icon: 'warning',
+                showCancelButton: true, confirmButtonColor: '#e53e3e', confirmButtonText: 'Sí, eliminar'
             }).then((result) => {
                 if (result.isConfirmed) {
-                    citas.splice(index, 1); renderizarTabla();
-                    Swal.fire({ title: '¡Eliminada!', text: 'La cita fue borrada.', icon: 'success', confirmButtonColor: '#38b2ac' });
+                    db.collection("citas").doc(docId).delete().then(() => {
+                        Swal.fire({ title: '¡Eliminada!', icon: 'success', timer: 1500, showConfirmButton: false });
+                    });
                 }
             });
         }
 
-        renderizarTabla();
+        // Iniciar
+        escucharCitas();
     </script>
 </body>
 </html>
