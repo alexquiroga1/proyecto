@@ -12,7 +12,6 @@
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     
     <style>
-        /* [Los estilos son consistentes con tus otros archivos para mantener la estética] */
         :root { --primary-color: #1a365d; --secondary-color: #2b6cb0; --accent-color: #38b2ac; --bg-color: #f4f7f9; }
         body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); display: flex; height: 100vh; }
         .sidebar { width: 260px; background-color: var(--primary-color); color: white; display: flex; flex-direction: column; }
@@ -33,7 +32,9 @@
         .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
         .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; }
         .btn-guardar { background-color: var(--secondary-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; }
-        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #ddd; }
+        .acciones-btn { border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px; }
+        .btn-edit { background-color: #e2e8f0; color: #2b6cb0; }
+        .btn-delete { background-color: #fee2e2; color: #dc2626; }
     </style>
 </head>
 <body>
@@ -59,21 +60,21 @@
             <table>
                 <thead>
                     <tr>
-                        <th>Médico</th>
+                        <th>Nombre del Médico</th>
                         <th>Especialidad</th>
-                        <th>Email/Teléfono</th>
+                        <th>Teléfono / Email</th>
                         <th>Estado</th>
                         <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody id="tbody-medicos">
-                    <!-- Firebase llena esto -->
+                    <!-- Firebase llena la tabla en tiempo real -->
                 </tbody>
             </table>
         </section>
     </main>
 
-    <!-- MODAL -->
+    <!-- MODAL AGREGAR / EDITAR -->
     <div class="modal-overlay" id="modalMedico">
         <div class="modal">
             <h2 id="modalTitle">Nuevo Médico</h2>
@@ -87,7 +88,7 @@
                     <select id="estado"><option value="Activo">Activo</option><option value="Inactivo">Inactivo</option></select>
                 </div>
                 <button type="submit" class="btn-guardar">Guardar</button>
-                <button type="button" onclick="cerrarModal()" style="margin-top:10px; width:100%; border:none; background:none; cursor:pointer;">Cancelar</button>
+                <button type="button" onclick="cerrarModal()" style="margin-top:10px; width:100%; border:none; background:none; cursor:pointer; color:#718096; font-weight:bold;">Cancelar</button>
             </form>
         </div>
     </div>
@@ -105,10 +106,11 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
-        // OBTENER MÉDICOS
+        // OBTENER MÉDICOS Y LIMPIAR LA TABLA PARA EVITAR DUPLICADOS
         db.collection("medicos").onSnapshot(snap => {
             const tbody = document.getElementById('tbody-medicos');
-            tbody.innerHTML = '';
+            tbody.innerHTML = ''; // ¡Esta línea evita la duplicación!
+            
             snap.forEach(doc => {
                 let m = doc.data();
                 tbody.innerHTML += `
@@ -116,16 +118,16 @@
                         <td><strong>${m.nombre}</strong></td>
                         <td>${m.especialidad}</td>
                         <td>${m.contacto}</td>
-                        <td>${m.estado}</td>
+                        <td><span style="background:#e2e8f0; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:bold;">${m.estado}</span></td>
                         <td>
-                            <button onclick="editar('${doc.id}')" style="border:none; cursor:pointer;"><i class="fa-solid fa-pen"></i></button>
-                            <button onclick="eliminar('${doc.id}')" style="border:none; cursor:pointer; color:red;"><i class="fa-solid fa-trash"></i></button>
+                            <button class="acciones-btn btn-edit" onclick="editar('${doc.id}')"><i class="fa-solid fa-pen"></i></button>
+                            <button class="acciones-btn btn-delete" onclick="eliminar('${doc.id}')"><i class="fa-solid fa-trash"></i></button>
                         </td>
                     </tr>`;
             });
         });
 
-        // FORMULARIO (ADD O EDIT)
+        // GUARDAR O EDITAR
         document.getElementById('formMedico').onsubmit = (e) => {
             e.preventDefault();
             let id = document.getElementById('editId').value;
@@ -137,16 +139,16 @@
             };
 
             if(id) {
-                db.collection("medicos").doc(id).update(data);
+                db.collection("medicos").doc(id).update(data).then(() => { Swal.fire('Actualizado', '', 'success'); });
             } else {
-                db.collection("medicos").add(data);
+                db.collection("medicos").add(data).then(() => { Swal.fire('Guardado', '', 'success'); });
             }
             cerrarModal();
         };
 
-        function abrirModal() { document.getElementById('modalMedico').style.display = 'flex'; }
+        function abrirModal() { document.getElementById('modalTitle').innerText = 'Nuevo Médico'; document.getElementById('modalMedico').style.display = 'flex'; }
         function cerrarModal() { document.getElementById('modalMedico').style.display = 'none'; document.getElementById('formMedico').reset(); document.getElementById('editId').value = ''; }
-        function eliminar(id) { db.collection("medicos").doc(id).delete(); }
+        
         function editar(id) {
             db.collection("medicos").doc(id).get().then(doc => {
                 let m = doc.data();
@@ -154,7 +156,17 @@
                 document.getElementById('nombre').value = m.nombre;
                 document.getElementById('especialidad').value = m.especialidad;
                 document.getElementById('contacto').value = m.contacto;
-                abrirModal();
+                document.getElementById('estado').value = m.estado;
+                document.getElementById('modalTitle').innerText = 'Editar Médico';
+                document.getElementById('modalMedico').style.display = 'flex';
+            });
+        }
+
+        function eliminar(id) { 
+            Swal.fire({
+                title: '¿Eliminar?', icon: 'warning', showCancelButton: true, confirmButtonColor: '#e53e3e', confirmButtonText: 'Sí, borrar'
+            }).then((result) => {
+                if (result.isConfirmed) db.collection("medicos").doc(id).delete(); 
             });
         }
     </script>
