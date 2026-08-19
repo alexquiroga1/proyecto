@@ -8,7 +8,168 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- LIBRERÍA PREMIUM PARA POP-UPS (SweetAlert2) -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Consultorio - Médicos</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
+    <!-- FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        /* [Los estilos son consistentes con tus otros archivos para mantener la estética] */
+        :root { --primary-color: #1a365d; --secondary-color: #2b6cb0; --accent-color: #38b2ac; --bg-color: #f4f7f9; }
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background-color: var(--bg-color); display: flex; height: 100vh; }
+        .sidebar { width: 260px; background-color: var(--primary-color); color: white; display: flex; flex-direction: column; }
+        .nav-links { list-style: none; padding: 0; margin-top: 15px; }
+        .nav-links li { padding: 15px 25px; cursor: pointer; border-radius: 8px; margin: 5px 15px; }
+        .nav-links li.active { background-color: var(--secondary-color); }
+        .nav-links a { color: white; text-decoration: none; display: flex; align-items: center; gap: 10px; }
+        .main-content { flex: 1; padding: 30px; overflow-y: auto; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .btn-nuevo { background-color: var(--accent-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .table-container { background: white; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); overflow: hidden; }
+        table { width: 100%; border-collapse: collapse; }
+        th { background-color: #5a6a7e; color: white; padding: 16px; text-align: left; }
+        td { padding: 16px; border-bottom: 1px solid #edf2f7; }
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; z-index: 1000; }
+        .modal { background: white; padding: 30px; border-radius: 12px; width: 400px; }
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 600; }
+        .form-group input, .form-group select { width: 100%; padding: 10px; border: 1px solid #cbd5e0; border-radius: 6px; box-sizing: border-box; }
+        .btn-guardar { background-color: var(--secondary-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #ddd; }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <h2 style="text-align:center; padding:20px 0; background:rgba(0,0,0,0.2);">Consultorio</h2>
+        <ul class="nav-links">
+            <li><a href="index.html"><i class="fa-solid fa-chart-pie"></i> Dashboard</a></li>
+            <li><a href="pacientes.html"><i class="fa-solid fa-users"></i> Pacientes</a></li>
+            <li><a href="citas.html"><i class="fa-solid fa-calendar-check"></i> Citas</a></li>
+            <li class="active"><a href="medicos.html"><i class="fa-solid fa-user-doctor"></i> Médicos</a></li>
+            <li><a href="configuracion.html"><i class="fa-solid fa-gear"></i> Configuración</a></li>
+        </ul>
+    </aside>
+
+    <main class="main-content">
+        <div class="header-top">
+            <h1>Gestión de Médicos</h1>
+            <button class="btn-nuevo" onclick="abrirModal()"><i class="fa-solid fa-plus"></i> Nuevo Médico</button>
+        </div>
+
+        <section class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Médico</th>
+                        <th>Especialidad</th>
+                        <th>Email/Teléfono</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tbody-medicos">
+                    <!-- Firebase llena esto -->
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!-- MODAL -->
+    <div class="modal-overlay" id="modalMedico">
+        <div class="modal">
+            <h2 id="modalTitle">Nuevo Médico</h2>
+            <form id="formMedico">
+                <input type="hidden" id="editId">
+                <div class="form-group"><label>Nombre Completo</label><input type="text" id="nombre" required></div>
+                <div class="form-group"><label>Especialidad</label><input type="text" id="especialidad" required></div>
+                <div class="form-group"><label>Contacto</label><input type="text" id="contacto" required></div>
+                <div class="form-group">
+                    <label>Estado</label>
+                    <select id="estado"><option value="Activo">Activo</option><option value="Inactivo">Inactivo</option></select>
+                </div>
+                <button type="submit" class="btn-guardar">Guardar</button>
+                <button type="button" onclick="cerrarModal()" style="margin-top:10px; width:100%; border:none; background:none; cursor:pointer;">Cancelar</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCw1uPXzT0BVcJeN06f-BGft7WVsTRmqKs",
+            authDomain: "app-gestion6.firebaseapp.com",
+            projectId: "app-gestion6",
+            storageBucket: "app-gestion6.firebasestorage.app",
+            messagingSenderId: "136361384216",
+            appId: "1:136361384216:web:2ccbda3508aa5ee579266d",
+            measurementId: "G-M81VW3QSFW"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // OBTENER MÉDICOS
+        db.collection("medicos").onSnapshot(snap => {
+            const tbody = document.getElementById('tbody-medicos');
+            tbody.innerHTML = '';
+            snap.forEach(doc => {
+                let m = doc.data();
+                tbody.innerHTML += `
+                    <tr>
+                        <td><strong>${m.nombre}</strong></td>
+                        <td>${m.especialidad}</td>
+                        <td>${m.contacto}</td>
+                        <td>${m.estado}</td>
+                        <td>
+                            <button onclick="editar('${doc.id}')" style="border:none; cursor:pointer;"><i class="fa-solid fa-pen"></i></button>
+                            <button onclick="eliminar('${doc.id}')" style="border:none; cursor:pointer; color:red;"><i class="fa-solid fa-trash"></i></button>
+                        </td>
+                    </tr>`;
+            });
+        });
+
+        // FORMULARIO (ADD O EDIT)
+        document.getElementById('formMedico').onsubmit = (e) => {
+            e.preventDefault();
+            let id = document.getElementById('editId').value;
+            let data = {
+                nombre: document.getElementById('nombre').value,
+                especialidad: document.getElementById('especialidad').value,
+                contacto: document.getElementById('contacto').value,
+                estado: document.getElementById('estado').value
+            };
+
+            if(id) {
+                db.collection("medicos").doc(id).update(data);
+            } else {
+                db.collection("medicos").add(data);
+            }
+            cerrarModal();
+        };
+
+        function abrirModal() { document.getElementById('modalMedico').style.display = 'flex'; }
+        function cerrarModal() { document.getElementById('modalMedico').style.display = 'none'; document.getElementById('formMedico').reset(); document.getElementById('editId').value = ''; }
+        function eliminar(id) { db.collection("medicos").doc(id).delete(); }
+        function editar(id) {
+            db.collection("medicos").doc(id).get().then(doc => {
+                let m = doc.data();
+                document.getElementById('editId').value = doc.id;
+                document.getElementById('nombre').value = m.nombre;
+                document.getElementById('especialidad').value = m.especialidad;
+                document.getElementById('contacto').value = m.contacto;
+                abrirModal();
+            });
+        }
+    </script>
+</body>
+</html>
     <style>
         /* =========================================
            PALETA DE COLORES Y DISEÑO BASE
